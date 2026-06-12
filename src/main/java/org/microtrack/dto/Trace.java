@@ -1,37 +1,26 @@
 package org.microtrack.dto;
 
 import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.sql.Timestamp;
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
 
 public class Trace implements Serializable {
 
     private String traceId;
+    private String spanId;
+    private String parentSpanId;
     private String serviceName;
-    private Timestamp timestamp;
-    private String checkpointName;
-    private Boolean isError;
-    private Long durationMs;
-    private Object genericData;
-    private List<String> successorBy;
+    private OperationType operationType;
+    private String operationName;
+    private String target;
+    private Instant startTime;
+    private Instant endTime;
+    private Map<String, Object> tags;
+    private Status status;
 
-    public Trace() {}
-
-    public Map<String, Object> convertToMap() throws IllegalAccessException {
-        Map<String, Object> map = new HashMap<>();
-        Field[] fields = this.getClass().getDeclaredFields();
-
-        for (Field field: fields) {
-            field.setAccessible(true);
-            map.put(field.getName(), field.get(this));
-        }
-
-        return map;
+    public Trace() {
+        this.tags = new HashMap<>();
     }
 
     public String getTraceId() {
@@ -42,6 +31,22 @@ public class Trace implements Serializable {
         this.traceId = traceId;
     }
 
+    public String getSpanId() {
+        return spanId;
+    }
+
+    public void setSpanId(String spanId) {
+        this.spanId = spanId;
+    }
+
+    public String getParentSpanId() {
+        return parentSpanId;
+    }
+
+    public void setParentSpanId(String parentSpanId) {
+        this.parentSpanId = parentSpanId;
+    }
+
     public String getServiceName() {
         return serviceName;
     }
@@ -50,52 +55,72 @@ public class Trace implements Serializable {
         this.serviceName = serviceName;
     }
 
-    public Timestamp getTimestamp() {
-        return timestamp;
+    public OperationType getOperationType() {
+        return operationType;
     }
 
-    public void setTimestamp(Timestamp timestamp) {
-        this.timestamp = timestamp;
+    public void setOperationType(OperationType operationType) {
+        this.operationType = operationType;
     }
 
-    public String getCheckpointName() {
-        return checkpointName;
+    public String getOperationName() {
+        return operationName;
     }
 
-    public void setCheckpointName(String checkpointName) {
-        this.checkpointName = checkpointName;
+    public void setOperationName(String operationName) {
+        this.operationName = operationName;
     }
 
-    public Boolean getError() {
-        return isError;
+    public String getTarget() {
+        return target;
     }
 
-    public void setError(Boolean error) {
-        isError = error;
+    public void setTarget(String target) {
+        this.target = target;
     }
 
-    public Long getDurationMs() {
-        return durationMs;
+    public Instant getStartTime() {
+        return startTime;
     }
 
-    public void setDurationMs(Long durationMs) {
-        this.durationMs = durationMs;
+    public void setStartTime(Instant startTime) {
+        this.startTime = startTime;
     }
 
-    public Object getGenericData() {
-        return genericData;
+    public Instant getEndTime() {
+        return endTime;
     }
 
-    public void setGenericData(Object genericData) {
-        this.genericData = genericData;
+    public void setEndTime(Instant endTime) {
+        this.endTime = endTime;
     }
 
-    public List<String> getSuccessorBy() {
-        return successorBy;
+    public Map<String, Object> getTags() {
+        return tags;
     }
 
-    public void setSuccessorBy(ArrayList<String> successorBy) {
-        this.successorBy = successorBy;
+    public void setTags(Map<String, Object> tags) {
+        this.tags = tags;
     }
 
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public enum OperationType {
+        HTTP,
+        DATABASE,
+        MESSAGE_PUBLISH,
+        MESSAGE_CONSUME,
+        INTERNAL
+    }
+
+    public enum Status {
+        SUCCESS,
+        ERROR
+    }
 }

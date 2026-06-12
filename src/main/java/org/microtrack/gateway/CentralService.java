@@ -23,9 +23,9 @@ public class CentralService {
         this.objectMapper = new ObjectMapper();
     }
 
-    public ResponseTrace sendTrace(Trace trace) throws IOException, IllegalAccessException {
+    public ResponseTrace sendTrace(Trace trace) throws IOException {
         try {
-            String requestBody = objectMapper.writeValueAsString(trace.convertToMap());
+            String requestBody = objectMapper.writeValueAsString(trace);
 
             System.out.println("TRACE: " + requestBody);
 
