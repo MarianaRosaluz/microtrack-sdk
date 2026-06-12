@@ -1,52 +1,57 @@
 package org.microtrack.gateway;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.microtrack.dto.ResponseTrace;
 import org.microtrack.dto.Trace;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Future;
 
 public class CentralService {
 
-    public ResponseTrace sendTrace(Trace trace) throws IOException, InterruptedException, IllegalAccessException {
+    private final KafkaPublisher kafkaPublisher;
+    private final ObjectMapper objectMapper;
+
+    public CentralService() {
+        this.kafkaPublisher = new KafkaPublisher();
+        this.objectMapper = new ObjectMapper();
+    }
+
+    public CentralService(KafkaPublisher kafkaPublisher) {
+        this.kafkaPublisher = kafkaPublisher;
+        this.objectMapper = new ObjectMapper();
+    }
+
+    public ResponseTrace sendTrace(Trace trace) throws IOException, IllegalAccessException {
         try {
-
-            String uri = "https://3474-2804-7f2-2896-2169-be99-3aa8-2c6f-ae91.ngrok-free.app/traces";
-
-
-            var objectMapper = new ObjectMapper();
             String requestBody = objectMapper.writeValueAsString(trace.convertToMap());
 
             System.out.println("TRACE: " + requestBody);
 
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(uri))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8))
-                    .build();
+            String key = trace.getTraceId() != null ? trace.getTraceId() : String.valueOf(System.currentTimeMillis());
+            Future<RecordMetadata> future = kafkaPublisher.publish(key, requestBody);
 
-            HttpResponse<String> response = client.send(
-                    request,
-                    HttpResponse.BodyHandlers.ofString()
-            );
+            RecordMetadata metadata = future.get();
 
             ResponseTrace responseTrace = new ResponseTrace();
-            responseTrace.setStatusCode(response.statusCode());
-            responseTrace.setMessage(response.body());
+            responseTrace.setStatusCode(200);
+            responseTrace.setMessage("Trace publicado com sucesso no Kafka - Tópico: " + metadata.topic() + 
+                    ", Partição: " + metadata.partition() + 
+                    ", Offset: " + metadata.offset());
 
             return responseTrace;
 
         } catch (Exception exception) {
-            System.out.print("Erro ao enviar trace para o serviço central!");
-            throw exception;
+            System.out.print("Erro ao publicar trace no Kafka!");
+            throw new IOException("Erro ao publicar trace no Kafka", exception);
         }
+    }
 
+    public void close() {
+        if (kafkaPublisher != null) {
+            kafkaPublisher.close();
+        }
     }
 
 }
