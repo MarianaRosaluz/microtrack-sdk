@@ -4,11 +4,12 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class Trace implements Serializable {
 
-    private String traceId;
-    private String spanId;
+    private UUID traceId;
+    private UUID spanId;
     private String parentSpanId;
     private String serviceName;
     private OperationType operationType;
@@ -23,19 +24,19 @@ public class Trace implements Serializable {
         this.tags = new HashMap<>();
     }
 
-    public String getTraceId() {
+    public UUID getTraceId() {
         return traceId;
     }
 
-    public void setTraceId(String traceId) {
+    public void setTraceId(UUID traceId) {
         this.traceId = traceId;
     }
 
-    public String getSpanId() {
+    public UUID getSpanId() {
         return spanId;
     }
 
-    public void setSpanId(String spanId) {
+    public void setSpanId(UUID spanId) {
         this.spanId = spanId;
     }
 
@@ -109,18 +110,5 @@ public class Trace implements Serializable {
 
     public void setStatus(Status status) {
         this.status = status;
-    }
-
-    public enum OperationType {
-        HTTP,
-        DATABASE,
-        MESSAGE_PUBLISH,
-        MESSAGE_CONSUME,
-        INTERNAL
-    }
-
-    public enum Status {
-        SUCCESS,
-        ERROR
     }
 }

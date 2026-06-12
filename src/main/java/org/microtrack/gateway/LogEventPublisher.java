@@ -9,19 +9,19 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
-public class KafkaPublisher {
+public class LogEventPublisher {
 
     private final KafkaProducer<String, String> producer;
     private final String topicName;
 
-    public KafkaPublisher() {
+    public LogEventPublisher() {
         Properties props = loadKafkaProperties();
-        this.topicName = props.getProperty("topic.name", "trace-events");
+        this.topicName = props.getProperty("log.topic.name", "log-events");
         this.producer = new KafkaProducer<>(props);
     }
 
-    public KafkaPublisher(Properties customProps) {
-        this.topicName = customProps.getProperty("topic.name", "trace-events");
+    public LogEventPublisher(Properties customProps) {
+        this.topicName = customProps.getProperty("log.topic.name", "log-events");
         this.producer = new KafkaProducer<>(customProps);
     }
 
@@ -42,10 +42,10 @@ public class KafkaPublisher {
         ProducerRecord<String, String> record = new ProducerRecord<>(topicName, key, message);
         return producer.send(record, (metadata, exception) -> {
             if (exception != null) {
-                System.err.println("Erro ao publicar mensagem no Kafka: " + exception.getMessage());
+                System.err.println("Erro ao publicar log event no Kafka: " + exception.getMessage());
                 exception.printStackTrace();
             } else {
-                System.out.println("Mensagem publicada com sucesso no tópico: " + metadata.topic() +
+                System.out.println("Log event publicado com sucesso no tópico: " + metadata.topic() +
                         ", partição: " + metadata.partition() +
                         ", offset: " + metadata.offset());
             }
