@@ -16,6 +16,7 @@ public class Trace implements Serializable {
     private Timestamp timestamp;
     private String checkpointName;
     private Boolean isError;
+    private Long durationMs;
     private Object genericData;
     private List<String> successorBy;
 
@@ -71,6 +72,14 @@ public class Trace implements Serializable {
 
     public void setError(Boolean error) {
         isError = error;
+    }
+
+    public Long getDurationMs() {
+        return durationMs;
+    }
+
+    public void setDurationMs(Long durationMs) {
+        this.durationMs = durationMs;
     }
 
     public Object getGenericData() {
