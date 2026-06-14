@@ -17,8 +17,8 @@ public class CentralService {
     private final ObjectMapper objectMapper;
 
     public CentralService() {
-        this.kafkaPublisher = new KafkaPublisher();
-        this.logEventPublisher = new LogEventPublisher();
+        this.kafkaPublisher = KafkaPublisher.getInstance();
+        this.logEventPublisher = LogEventPublisher.getInstance();
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
     }
@@ -37,15 +37,11 @@ public class CentralService {
             System.out.println("TRACE: " + requestBody);
 
             String key = trace.getTraceId() != null ? trace.getTraceId().toString() : String.valueOf(System.currentTimeMillis());
-            Future<RecordMetadata> future = kafkaPublisher.publish(key, requestBody);
-
-            RecordMetadata metadata = future.get();
+            kafkaPublisher.publish(key, requestBody);
 
             ResponseTrace responseTrace = new ResponseTrace();
-            responseTrace.setStatusCode(200);
-            responseTrace.setMessage("Trace publicado com sucesso no Kafka - Tópico: " + metadata.topic() + 
-                    ", Partição: " + metadata.partition() + 
-                    ", Offset: " + metadata.offset());
+            responseTrace.setStatusCode(202);
+            responseTrace.setMessage("Trace enviado para processamento assíncrono no Kafka");
 
             return responseTrace;
 
@@ -62,15 +58,11 @@ public class CentralService {
             System.out.println("LOG EVENT: " + requestBody);
 
             String key = logEvent.getTraceId() != null ? logEvent.getTraceId().toString() : String.valueOf(System.currentTimeMillis());
-            Future<RecordMetadata> future = logEventPublisher.publish(key, requestBody);
-
-            RecordMetadata metadata = future.get();
+            logEventPublisher.publish(key, requestBody);
 
             ResponseTrace responseTrace = new ResponseTrace();
-            responseTrace.setStatusCode(200);
-            responseTrace.setMessage("Log event publicado com sucesso no Kafka - Tópico: " + metadata.topic() + 
-                    ", Partição: " + metadata.partition() + 
-                    ", Offset: " + metadata.offset());
+            responseTrace.setStatusCode(202);
+            responseTrace.setMessage("Log event enviado para processamento assíncrono no Kafka");
 
             return responseTrace;
 

@@ -11,18 +11,41 @@ import java.util.concurrent.Future;
 
 public class LogEventPublisher {
 
+    private static volatile LogEventPublisher instance;
     private final KafkaProducer<String, String> producer;
     private final String topicName;
 
-    public LogEventPublisher() {
+    private LogEventPublisher() {
         Properties props = loadKafkaProperties();
         this.topicName = props.getProperty("log.topic.name", "log-events");
         this.producer = new KafkaProducer<>(props);
     }
 
-    public LogEventPublisher(Properties customProps) {
+    private LogEventPublisher(Properties customProps) {
         this.topicName = customProps.getProperty("log.topic.name", "log-events");
         this.producer = new KafkaProducer<>(customProps);
+    }
+
+    public static LogEventPublisher getInstance() {
+        if (instance == null) {
+            synchronized (LogEventPublisher.class) {
+                if (instance == null) {
+                    instance = new LogEventPublisher();
+                }
+            }
+        }
+        return instance;
+    }
+
+    public static LogEventPublisher getInstance(Properties customProps) {
+        if (instance == null) {
+            synchronized (LogEventPublisher.class) {
+                if (instance == null) {
+                    instance = new LogEventPublisher(customProps);
+                }
+            }
+        }
+        return instance;
     }
 
     private Properties loadKafkaProperties() {
